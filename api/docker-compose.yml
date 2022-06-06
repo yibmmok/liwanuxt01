@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  db:
+    #image: mysql:5.7.36
+    image: liwa0000/mysql57
+    environment:
+      MYSQL_ROOT_PASSWORD: yuhjen
+      MYSQL_DATABASE: liwa00
+      MYSQL_USER: james
+      MYSQL_PASSWORD: yuhjen
+    ports: 
+      - 8100:3306
+    restart: always
+    volumes: 
+      - db-data:/var/lib/mysql
+    networks:
+      default:
+      liwa_net:
+        ipv4_address: 172.18.2.3
+
+  phpmyadmin: 
+    image: phpmyadmin:5.1.1
+    ports:
+      - 8101:80
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: james
+      PMA_PASSWORD: yuhjen
+    restart: always
+    networks:
+      default:
+      liwa_net:
+        ipv4_address: 172.18.2.4
+
+  phpapache:
+    #image: php:7.4.27-apache-bullseye
+    image: liwa0000/liwaphp
+    ports:
+      - 8102:80
+      - 8103:443
+    depends_on:
+      - db
+    volumes: 
+      - ./api:/var/www/html
+    networks:
+      liwa_net:
+        ipv4_address: 172.18.2.5
+      
+
+  imgsvr:
+    #image: php:7.4.27-apache-bullseye
+    image: liwa0000/liwaphp
+    ports:
+      - 8104:80
+      - 8105:443
+    depends_on:
+      - db
+    volumes: 
+      - ./imgsvr:/var/www/html
+    networks:
+      liwa_net:
+          ipv4_address: 172.18.2.6 
+       
+
+networks:
+  liwa_net:
+    driver: bridge
+    ipam: 
+      driver: default
+      config:
+        - subnet: "172.18.2.0/16"
+    external: true
+
+volumes:
+  db-data:
